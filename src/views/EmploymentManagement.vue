@@ -1,38 +1,22 @@
 <template>
-    <div class="container py-4">
-        <h1 class="mb-4 text-center">취업 관리 시스템</h1>
-        <div class="mb-3">
-            <input v-model="student.studentId" class="form-control mb-2" placeholder="학생 ID" disabled="disabled" />
-            <input v-model="student.name" class="form-control mb-2" placeholder="이름" />
-            <input v-model="student.company" class="form-control mb-2" placeholder="회사" />
-            <input type="date" v-model="student.employmentDate" class="form-control mb-2" placeholder="취업 날짜" />
-            <button @click="addOrUpdateStudent" class="btn btn-primary btn-block">학생 추가/수정</button>
-            <button v-if="isUpdateMode" @click="resetForm" class="btn btn-warning btn-block">취소</button>
+    <div class="container">
+        <h1>취업 관리 시스템</h1>
+        <div class="form">
+            <input v-model="student.studentId" placeholder="학생 ID" />
+            <input v-model="student.name" placeholder="이름" />
+            <input v-model="student.company" placeholder="회사" />
+            <input type="date" v-model="student.employmentDate" />
+            <button @click="addOrUpdateStudent">{{ isUpdateMode ? '업데이트' : '추가' }}</button>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="thead-light">
-                    <tr>
-                        <th scope="col">학생 ID</th>
-                        <th scope="col">이름</th>
-                        <th scope="col">회사</th>
-                        <th scope="col">취업 날짜</th>
-                        <th scope="col">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="student in students" :key="student.id">
-                        <td>{{ student.studentId }}</td>
-                        <td>{{ student.name }}</td>
-                        <td>{{ student.company }}</td>
-                        <td>{{ student.employmentDate }}</td>
-                        <td>
-                            <button @click="selectStudent(student)" class="btn btn-secondary btn-sm">수정</button>
-                            <button @click="deleteStudent(student.id)" class="btn btn-danger btn-sm">삭제</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="list">
+            <div v-for="student in students" :key="student.id" class="list-item">
+                <div>{{ student.studentId }}</div>
+                <div>{{ student.name }}</div>
+                <div>{{ student.company }}</div>
+                <div>{{ student.employmentDate }}</div>
+                <button @click="selectStudent(student)">수정</button>
+                <button @click="deleteStudent(student.id)">삭제</button>
+            </div>
         </div>
     </div>
 </template>
@@ -65,8 +49,7 @@ export default {
         },
         async addOrUpdateStudent() {
             if (this.isUpdateMode) {
-                const studentRef = doc(db, 'students', this.updateId);
-                await updateDoc(studentRef, this.student);
+                await updateDoc(doc(db, 'students', this.updateId), this.student);
             } else {
                 await addDoc(collection(db, 'students'), this.student);
             }
@@ -91,32 +74,73 @@ export default {
 };
 </script>
 
-<style>
-.employment-management {
-    max-width: 800px;
-    margin: 20px auto;
-    background: #f8f9fa;
+<style scoped>
+.container {
+    max-width: 600px;
+    margin: 0 auto;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.student-form input,
-.student-form button {
-    margin-top: 10px;
-}
-
-.table-hover tbody tr:hover {
-    background-color: #f0f0f0;
-}
-
-.text-center {
+h1 {
     text-align: center;
+    margin-bottom: 20px;
 }
 
-.btn-block {
-    display: block;
+.form input[type="date"],
+.form input[type="text"],
+.form button {
     width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.form button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+}
+
+.form button:hover {
+    opacity: 0.9;
+}
+
+.list {
+    margin-top: 20px;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
     margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.list-item>div {
+    margin: 0 10px;
+}
+
+.list-item>button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.list-item>button:first-of-type {
+    background-color: #ffc107;
+}
+
+.list-item>button:last-of-type {
+    background-color: #f44336;
+    color: white;
+}
+
+.list-item>button:hover {
+    opacity: 0.8;
 }
 </style>
