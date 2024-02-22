@@ -1,21 +1,49 @@
 <template>
     <div class="container">
-        <h1>취업 관리 시스템</h1>
-        <div class="form">
-            <input v-model="student.studentId" placeholder="학생 ID" />
-            <input v-model="student.name" placeholder="이름" />
-            <input v-model="student.company" placeholder="회사" />
-            <input type="date" v-model="student.employmentDate" />
-            <button @click="addOrUpdateStudent">{{ isUpdateMode ? '업데이트' : '추가' }}</button>
+        <div class="header">
+            <h1>취업 관리 시스템</h1>
+            <input type="text" v-model="searchQuery" placeholder="학생 검색..." />
         </div>
-        <div class="list">
-            <div v-for="student in students" :key="student.id" class="list-item">
-                <div>{{ student.studentId }}</div>
-                <div>{{ student.name }}</div>
-                <div>{{ student.company }}</div>
-                <div>{{ student.employmentDate }}</div>
-                <button @click="selectStudent(student)">수정</button>
-                <button @click="deleteStudent(student.id)">삭제</button>
+        <div class="main-content">
+            <div class="form-container">
+                <div class="input-field">
+                    <label>학생 ID:</label>
+                    <input v-model="student.studentId" placeholder="학생 ID" />
+                </div>
+                <div class="input-field">
+                    <label>이름:</label>
+                    <input v-model="student.name" placeholder="이름" />
+                </div>
+                <div class="input-field">
+                    <label>회사:</label>
+                    <input v-model="student.company" placeholder="회사" />
+                </div>
+                <div class="input-field">
+                    <label>취업 날짜:</label>
+                    <input type="date" v-model="student.employmentDate" />
+                </div>
+                <div class="input-field">
+                    <label>상태:</label>
+                    <select v-model="student.status">
+                        <option value="">선택...</option>
+                        <option value="지원 중">지원 중</option>
+                        <option value="면접 중">면접 중</option>
+                        <option value="취업 완료">취업 완료</option>
+                    </select>
+                </div>
+                <button @click="addOrUpdateStudent">{{ isUpdateMode ? '업데이트' : '추가' }}</button>
+            </div>
+            <div class="list-container">
+                <ul>
+                    <li v-for="student in filteredStudents" :key="student.id">
+                        {{ student.studentId }} - {{ student.name }} - {{ student.company }} - {{ student.employmentDate }}
+                        - {{ student.status }}
+                        <span>
+                            <button @click="selectStudent(student)">수정</button>
+                            <button @click="deleteStudent(student.id)">삭제</button>
+                        </span>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -34,10 +62,20 @@ export default {
                 name: '',
                 company: '',
                 employmentDate: '',
+                status: ''
             },
+            searchQuery: '',
             isUpdateMode: false,
-            updateId: null,
+            updateId: null
         };
+    },
+    computed: {
+        filteredStudents() {
+            return this.students.filter(student => {
+                return student.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                    student.studentId.includes(this.searchQuery);
+            });
+        }
     },
     async created() {
         await this.fetchStudents();
@@ -66,81 +104,90 @@ export default {
             this.updateId = student.id;
         },
         resetForm() {
-            this.student = { studentId: '', name: '', company: '', employmentDate: '' };
+            this.student = { studentId: '', name: '', company: '', employmentDate: '', status: '' };
             this.isUpdateMode = false;
             this.updateId = null;
-        },
-    },
+        }
+    }
 };
 </script>
 
 <style scoped>
 .container {
-    max-width: 600px;
+    max-width: 800px;
     margin: 0 auto;
     padding: 20px;
 }
 
-h1 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.form input[type="date"],
-.form input[type="text"],
-.form button {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-.form button {
-    background-color: #4CAF50;
-    color: white;
-    cursor: pointer;
-}
-
-.form button:hover {
-    opacity: 0.9;
-}
-
-.list {
-    margin-top: 20px;
-}
-
-.list-item {
+.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 20px;
+}
+
+.header input {
     padding: 10px;
+    width: 200px;
+}
+
+.main-content {
+    display: flex;
+    justify-content: space-between;
+}
+
+.form-container,
+.list-container {
+    flex-basis: 48%;
+}
+
+.input-field {
     margin-bottom: 10px;
-    background-color: #f9f9f9;
-    border-radius: 5px;
 }
 
-.list-item>div {
-    margin: 0 10px;
+.input-field label {
+    display: block;
+    margin-bottom: 5px;
 }
 
-.list-item>button {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+.input-field input,
+.input-field select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
-.list-item>button:first-of-type {
-    background-color: #ffc107;
-}
-
-.list-item>button:last-of-type {
-    background-color: #f44336;
+button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
     color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
 }
 
-.list-item>button:hover {
-    opacity: 0.8;
+button:hover {
+    background-color: #45a049;
 }
-</style>
+
+.list-container ul {
+    list-style: none;
+    padding: 0;
+}
+
+.list-container li {
+    padding: 10px;
+    background-color: #f9f9f9;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.list-container span {
+    float: right;
+}
+
+.list-container button {
+    margin-left: 10px;
+}</style>
